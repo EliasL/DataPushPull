@@ -3,10 +3,14 @@ package elwatchget
 import (
 	"bytes"
 	"encoding/json"
-	"log"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
+
+	secret "../../secrets"
+	dataStruct "../DataStruct"
 )
 
 func floatToString(inputNum float64) string {
@@ -36,36 +40,41 @@ type ElwatchSensor struct {
 	} `json:"sensors"`
 }
 
-// // AllDataDecoded holds all received data
-// type AllDataDecoded struct {
-// 	AllData []DataDecoded
-// }
-
 // GetElwatchData : Pull data from sensor with id
-func GetElwatchData(sensorID string, APIKey string) GetData {
+func GetElwatchData(sensorID string, secrets secret.Info) (dataStruct.Data, error) {
 
 	client := &http.Client{}
 	url := "https://neuron.el-watch.com/api/sensordata/" + sensorID
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatal(err)
+		var null dataStruct.Data
+		return null, err
 	}
-	req.Header.Set("API-Key", APIKey)
+	req.Header.Set("API-Key", secrets.APIKey)
 	res, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		var null dataStruct.Data
+		return null, err
 	}
-
 	var jsonData ElwatchSensor
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(res.Body)
 	jsonString := buf.String()
 	json.Unmarshal([]byte(jsonString), &jsonData)
 
-	var d Data
+	var d dataStruct.Data
 	layout := "2006-01-02 15:04:05"
-	d.Data = floatToString(jsonData.Sensors[0].LastValue)
-	d.ID = sensorID
-	d.Time, _ = time.Parse(layout, string(jsonData.Sensors[0].LastTime))
-	return d
+
+	if len(jsonData.Sensors) == 0 {
+		fmt.Println("Elwatch null response!")
+		err = errors.New("Elwatch null response: jsonData contained no sensors in jsonData.Sensors")
+		return d, err
+
+	} else {
+		d.Data = floatToString(jsonData.Sensors[0].LastValue)
+		d.ID = sensorID
+		loc, _ := time.LoadLocation("Europe/Oslo")
+		d.Time, _ = time.ParseInLocation(layout, string(jsonData.Sensors[0].LastTime), loc)
+		return d, nil
+	}
 }
