@@ -15,8 +15,8 @@ const (
 )
 
 // GetTTNData : Pull data from node with id
-func GetTTNData(appID string, secrets secret.Info) (dataStruct.Data, error) {
-
+func GetTTNData(deviceID string, secrets secret.Info) (dataStruct.Data, error) {
+	var appID = "temp_reader"
 	config := ttnsdk.NewCommunityConfig(sdkClientName)
 
 	client := config.NewClient(appID, secrets.APIKey)
@@ -30,7 +30,7 @@ func GetTTNData(appID string, secrets secret.Info) (dataStruct.Data, error) {
 
 	defer pubsub.Close()
 
-	myNewDevicePubSub := pubsub.Device("lora_device_1")
+	myNewDevicePubSub := pubsub.Device(deviceID)
 	defer myNewDevicePubSub.Close()
 	uplink, err := myNewDevicePubSub.SubscribeUplink()
 	if err != nil {
@@ -41,7 +41,7 @@ func GetTTNData(appID string, secrets secret.Info) (dataStruct.Data, error) {
 	layout := "2006-01-02T15:04:05Z"
 	for message := range uplink {
 		d.Data = string(message.PayloadRaw)
-		d.ID = appID
+		d.ID = deviceID
 		temp, _ := message.Metadata.Gateways[0].Time.MarshalText()
 
 		loc, _ := time.LoadLocation("Europe/Oslo")

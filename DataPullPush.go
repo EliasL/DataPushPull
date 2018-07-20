@@ -75,7 +75,7 @@ func addMYSQLData(collection []dataStruct.Data, db *sql.DB) {
 		// Try to convert to float
 		_, err := strconv.ParseFloat(data.Data, 64)
 		if err != nil {
-			//fmt.Printf("Cannot convert '%v' to float\n", data.Data)
+			fmt.Printf("Cannot convert '%v' to float\n", data.Data)
 			continue
 		}
 
@@ -84,6 +84,7 @@ func addMYSQLData(collection []dataStruct.Data, db *sql.DB) {
 		if err != nil {
 			// Try to create table
 			temp2, err := db.Query(fmt.Sprintf("CREATE TABLE sensor_%v LIKE template;", data.ID))
+			fmt.Println("\nCreating table...")
 			if err != nil {
 				fmt.Println("Unexpected error!: " + err.Error())
 			}
@@ -98,7 +99,6 @@ func collectData() {
 	// Initial pull
 	for _, id := range sensorIDs.TTN {
 		go pullTTNData(id)
-		fmt.Println("made a go")
 	}
 	for _, id := range sensorIDs.Telenor {
 		go pullTelenorData(id)
@@ -125,7 +125,7 @@ func collectData() {
 
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 10, 10, 0, '\t', tabwriter.Debug|tabwriter.AlignRight)
-	fmt.Fprintln(w, "TEL items\tELW items\tTTN itesm\tITP\tTSP\tTSS")
+	fmt.Fprintln(w, "TEL items\tELW items\tTTN items\tITP\tTSP\tTSS")
 	var printUpdate = func() {
 		fmt.Fprintf(w, "\r%8v\t%8v\t%8v\t%5v\t%v\t%v", TelenorUpdates, ElwatchUpdates, TTNUpdates, len(dataCollection), timeSincePush(), timeSinceStart())
 		w.Flush()
@@ -180,7 +180,7 @@ func main() {
 
 	sensorIDs.Elwatch = []string{"20006040", "20006039", "20004700", "20005880", "20005883", "20004722", "20004936", "20004874"}
 	sensorIDs.Telenor = []string{"357517080049085"}
-	sensorIDs.TTN = []string{"power_compare"}
+	sensorIDs.TTN = []string{"temp_reader1"}
 
 	fmt.Print("Enter password for mysql user elias at 46.101.29.167: ")
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
