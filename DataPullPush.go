@@ -75,7 +75,7 @@ func addMYSQLData(collection []dataStruct.Data, db *sql.DB) {
 		// Try to convert to float
 		_, err := strconv.ParseFloat(data.Data, 64)
 		if err != nil {
-			fmt.Printf("Cannot convert '%v' to float\n", data.Data)
+			fmt.Printf("\nCannot convert '%v' to float\n", data.Data)
 			continue
 		}
 
@@ -86,7 +86,7 @@ func addMYSQLData(collection []dataStruct.Data, db *sql.DB) {
 			temp2, err := db.Query(fmt.Sprintf("CREATE TABLE sensor_%v LIKE template;", data.ID))
 			fmt.Println("\nCreating table...")
 			if err != nil {
-				fmt.Println("Unexpected error!: " + err.Error())
+				fmt.Println("\nUnexpected error!: " + err.Error())
 			}
 			temp2.Close()
 		}
@@ -127,7 +127,7 @@ func collectData() {
 	w.Init(os.Stdout, 10, 10, 0, '\t', tabwriter.Debug|tabwriter.AlignRight)
 	fmt.Fprintln(w, "TEL items\tELW items\tTTN items\tITP\tTSP\tTSS")
 	var printUpdate = func() {
-		fmt.Fprintf(w, "\r%8v\t%8v\t%8v\t%5v\t%v\t%v", TelenorUpdates, ElwatchUpdates, TTNUpdates, len(dataCollection), timeSincePush(), timeSinceStart())
+		fmt.Fprintf(w, "\r%8v\t%8v\t%8v\t%3v\t%3v\t%10v", TelenorUpdates, ElwatchUpdates, TTNUpdates, len(dataCollection), timeSincePush(), timeSinceStart())
 		w.Flush()
 	}
 	for {

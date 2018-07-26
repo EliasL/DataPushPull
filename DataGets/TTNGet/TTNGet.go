@@ -46,7 +46,7 @@ func GetTTNData(deviceID string, secrets secret.Info) (dataStruct.Data, error) {
 
 		loc, _ := time.LoadLocation("Europe/Oslo")
 		tempTime, _ := time.ParseInLocation(layout, string(temp), loc)
-		tempTime = tempTime.Add(time.Hour * time.Duration(2))
+		tempTime = tempTime.Add(time.Hour * time.Duration(2)) // Don't like that i have to add two hours, don't understand it either
 		d.Time = tempTime
 
 		// ubsubscribe from uplink

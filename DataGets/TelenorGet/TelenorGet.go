@@ -55,7 +55,7 @@ func GetAllRawData(sensorID string, username string, passwd string) (Nbiot, erro
 
 // GetTelenorData returns the last data in a Data struct
 func GetTelenorData(sensorID string, secrets secret.Info) (dataStruct.Data, error) {
-	d, err := GetAllRawData(sensorID, secrets.Username, secrets.Password)
+	d, err := GetAllRawData(sensorID, secrets.Username, secrets.Password) // This seems to be the only option, of course we don't actually want all the data
 	if err != nil {
 		var null dataStruct.Data
 		return null, err
@@ -63,28 +63,9 @@ func GetTelenorData(sensorID string, secrets secret.Info) (dataStruct.Data, erro
 	var data dataStruct.Data
 	data.ID = d.Data[len(d.Data)-1].Imei
 	temp := d.Data[len(d.Data)-1].Timestamp / NanoToSec
-	data.Time = time.Unix(int64(temp), 0)
+
+	data.Time = time.Unix(int64(temp), 0).UTC().Add(2 * time.Hour) // Not a good way to do it, but not sure how to fix
 	data.Data = string(d.Data[len(d.Data)-1].Payload)
 
 	return data, nil
-}
-
-// GetLastNData returns the n last data in a NDataDecoded struct
-func GetLastNData(url string, username string, passwd string, n int) ([]dataStruct.Data, error) {
-	d, err := GetAllRawData(url, username, passwd)
-	if err != nil {
-		var null []dataStruct.Data
-		return null, err
-	}
-	var datas []dataStruct.Data
-	for n > 0 {
-		var data dataStruct.Data
-		data.ID = d.Data[len(d.Data)-1-n].Imei
-		temp := d.Data[len(d.Data)-1-n].Timestamp / NanoToSec
-		data.Time = time.Unix(int64(temp), 0)
-		data.Data = string(d.Data[len(d.Data)-1-n].Payload)
-		datas = append(datas, data)
-		n--
-	}
-	return datas, nil
 }
